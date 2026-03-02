@@ -20,13 +20,20 @@ roles = ['ALUMNI', 'STUDENT', 'FACULTY', 'VOLUNTEER', 'ALUMNI', 'STUDENT', 'FACU
 companies = ['Google', 'Microsoft', 'Amazon', 'Meta', 'Netflix', 'Tesla', 'Apple', 'Spotify', 'Twitter', 'Adobe']
 departments = ['Computer Science', 'Electrical Engineering', 'Mechanical', 'Civil', 'Information Tech']
 
-for i in range(1, 11):
+import random
+first_names = ['Rahul', 'Priya', 'Amit', 'Neha', 'Vikram', 'Sneha', 'Arjun', 'Riya', 'Karan', 'Kavya']
+last_names = ['Sharma', 'Patel', 'Singh', 'Kumar', 'Reddy', 'Iyer', 'Gupta', 'Nair', 'Verma', 'Das']
+
+for i in range(10):
+    fname = first_names[i]
+    lname = last_names[i]
+    uname = f"{fname.lower()}{lname.lower()}"
     users_to_create.append({
-        "username": f"user{i}",
-        "first_name": f"TestName{i}",
-        "last_name": "Demo",
-        "role": roles[i-1],
-        "email": f"user{i}@example.com",
+        "username": uname,
+        "first_name": fname,
+        "last_name": lname,
+        "role": roles[i],
+        "email": f"{uname}@example.com",
         "password": "password123"
     })
 
