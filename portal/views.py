@@ -136,9 +136,19 @@ class UserViewSet(viewsets.ModelViewSet):
         user_to_unblock.save()
         return Response({'status': 'User unblocked successfully.'})
 
-from .models import Post, Job
-from .serializers import PostSerializer, JobSerializer
+from .models import Post, Job, Profile
+from .serializers import PostSerializer, JobSerializer, ProfileSerializer
 from .permissions import IsAuthorOrAdminOrVolunteer
+
+class ProfileViewSet(viewsets.ReadOnlyModelViewSet):
+    # Only expose active/approved users' profiles
+    queryset = Profile.objects.filter(user__is_active=True, user__is_approved=True)
+    serializer_class = ProfileSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # Exclude admin profiles from directory
+        return self.queryset.exclude(user__role='ADMIN').select_related('user')
 
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 

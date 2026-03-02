@@ -1,13 +1,14 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
-    UserViewSet, PostViewSet, JobViewSet, JobApplicationViewSet, 
+    UserViewSet, ProfileViewSet, PostViewSet, JobViewSet, JobApplicationViewSet, 
     EventViewSet, RSVPViewSet, DonationViewSet, FundAllocationViewSet, 
     CommunityViewSet, DashboardStatsView, PendingRequestsView
 )
 
 router = DefaultRouter()
 router.register(r'users', UserViewSet)
+router.register(r'profiles', ProfileViewSet, basename='profile')
 router.register(r'posts', PostViewSet)
 router.register(r'jobs', JobViewSet)
 router.register(r'job-applications', JobApplicationViewSet, basename='jobapplication')
