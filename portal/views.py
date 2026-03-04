@@ -57,6 +57,12 @@ class UserViewSet(viewsets.ModelViewSet):
                         profile_data[key] = request.FILES.get(key)
                 else:
                     profile_data[key] = data.pop(key)[0] if isinstance(data.getlist(key), list) and data.getlist(key) else data.get(key)
+                    
+        # Remove file items before sending to UserSerializer to prevent unpicklable deepcopy error
+        if 'id_card' in data:
+            data.pop('id_card', None)
+        if 'profile_picture' in data:
+            data.pop('profile_picture', None)
         
         serializer = self.get_serializer(data=data)
         if serializer.is_valid():
