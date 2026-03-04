@@ -46,7 +46,7 @@ class UserViewSet(viewsets.ModelViewSet):
         # Handle nested profile data sent in multipart request
         profile_data = {}
         # The fields for ProfileSerializer now include 'id_card'
-        profile_fields = ['bio', 'graduation_year', 'degree', 'current_company', 'id_card']
+        profile_fields = ['bio', 'graduation_year', 'degree', 'current_company', 'id_card', 'department', 'reg_no']
         for key in profile_fields:
             if key in data:
                 # For file fields like 'id_card', request.FILES will contain it.
