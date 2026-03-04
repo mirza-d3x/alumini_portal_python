@@ -80,31 +80,22 @@ class UserViewSet(viewsets.ModelViewSet):
         user_to_approve = self.get_object()
         approver = request.user
         
+        if user_to_approve.is_approved:
+            return Response({'error': 'User is already approved.'}, status=status.HTTP_400_BAD_REQUEST)
+            
         if approver.role == 'FACULTY':
             if user_to_approve.role not in ['STUDENT', 'ALUMNI']:
                 return Response({'error': 'Faculty can only verify Students and Alumni.'}, status=status.HTTP_403_FORBIDDEN)
-            if user_to_approve.faculty_verified:
-                return Response({'error': 'User is already verified by faculty.'}, status=status.HTTP_400_BAD_REQUEST)
             user_to_approve.faculty_verified = True
             user_to_approve.faculty_verifier = approver
-            user_to_approve.save()
-            # Simulated email alert to admins
-            print(f"[EMAIL TO ADMINS] Subject: New user verified! User {user_to_approve.username} is waiting for final admin approval.")
-            return Response({'status': 'User verified successfully. Awaiting Admin approval.', 'verified_by': approver.username})
 
-        # Admin / Volunteer approval flow
-        if user_to_approve.role in ['STUDENT', 'ALUMNI'] and not user_to_approve.faculty_verified:
-            return Response({'error': 'Students and Alumni must be verified by Faculty first.'}, status=status.HTTP_400_BAD_REQUEST)
-            
-        if user_to_approve.is_approved:
-            return Response({'error': 'User is already approved.'}, status=status.HTTP_400_BAD_REQUEST)
-
+        # Direct approval
         user_to_approve.is_approved = True
         user_to_approve.approved_by = approver
         user_to_approve.approved_at = timezone.now()
         user_to_approve.save()
         
-        # Simulated welcome email to the newly approved user
+        # Simulated welcome email
         print(f"[EMAIL TO USER] Subject: Welcome to Alumni Portal! To: {user_to_approve.email}. Your account has been approved and activated.")
         
         return Response({'status': 'User approved successfully.', 'approved_by': approver.username})
@@ -259,14 +250,12 @@ class PendingRequestsView(APIView):
     permission_classes = [IsAdminOrFaculty]
 
     def get(self, request):
-        # Admins and Volunteers see pending users (students/alumni must be faculty verified)
+        # Admins and Volunteers see all pending users
         if request.user.role in ['ADMIN', 'VOLUNTEER']:
-            pending_students = User.objects.filter(is_approved=False, faculty_verified=True, role__in=['STUDENT', 'ALUMNI'])
-            pending_others = User.objects.filter(is_approved=False).exclude(role__in=['STUDENT', 'ALUMNI', 'ADMIN'])
-            pending_users = pending_students | pending_others
+            pending_users = User.objects.filter(is_approved=False).exclude(role='ADMIN')
             pending_donations = Donation.objects.filter(is_approved=False)
-        else: # Faculty can only see pending Students and Alumni that are NOT faculty verified
-            pending_users = User.objects.filter(is_approved=False, faculty_verified=False, role__in=['STUDENT', 'ALUMNI'])
+        else: # Faculty can only see pending Students and Alumni
+            pending_users = User.objects.filter(is_approved=False, role__in=['STUDENT', 'ALUMNI'])
             pending_donations = Donation.objects.none()
         
         user_serializer = UserSerializer(pending_users, many=True)
