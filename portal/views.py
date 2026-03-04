@@ -41,7 +41,10 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['post'], permission_classes=[permissions.AllowAny], parser_classes=[MultiPartParser, FormParser, JSONParser])
     def register(self, request):
-        data = request.data.copy()
+        if hasattr(request.data, 'lists'):
+            data = {k: v if len(v) > 1 else v[0] for k, v in request.data.lists()}
+        else:
+            data = dict(request.data)
         
         # Handle nested profile data sent in multipart request
         profile_data = {}
